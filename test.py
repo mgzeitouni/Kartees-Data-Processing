@@ -20,6 +20,7 @@ processed_data = DataSet(path, data, series_type='moving_average', ma_window_wid
 
 long_data = DataSet(path, data, series_type='regular')
 
+
 plt.figure(1)
 plt.subplot(211)
 plt.plot(processed_data.processed_time_series[:,0],processed_data.processed_time_series[:,1])

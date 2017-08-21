@@ -33,19 +33,19 @@ class DataSet:
 
 		# Check if time order ascending, else reverse it
 
-		if data_matrix[0,0] > data_matrix[-1,0]:
+		# if data_matrix[0,0] > data_matrix[-1,0]:
 
-			price_list = data_matrix[:,1].tolist()
+		# 	price_list = data_matrix[:,1].tolist()
 
-			price_list_reversed = list(reversed(price_list))
+		# 	price_list_reversed = list(reversed(price_list))
 
-			data_matrix[:,1] = price_list_reversed
+		# 	data_matrix[:,1] = price_list_reversed
 
-			time_list = data_matrix[:,0].tolist()
+			#time_list = data_matrix[:,0].tolist()
 
-			time_list_reversed = list(reversed(time_list))
+			#time_list_reversed = list(reversed(time_list))
 
-			data_matrix[:,0] = time_list_reversed
+			#data_matrix[:,0] = time_list_reversed
 
 
 		self.raw_data_matrix = data_matrix
@@ -63,6 +63,22 @@ class DataSet:
 	def process_time_data(self, days_back=90, extrapolate_method='connect_points'):
 
 		length = days_back * 6 * 24
+
+
+		if self.raw_data_matrix[0,0] > self.raw_data_matrix[-1,0]:
+
+			# price_list = self.raw_data_matrix[:,1].tolist()
+
+			# price_list_reversed = list(reversed(price_list))
+
+			# self.raw_data_matrix[:,1] = price_list_reversed
+
+			time_list = self.raw_data_matrix[:,0].tolist()
+
+			time_list_reversed = list(reversed(time_list))
+
+			self.raw_data_matrix[:,0] = time_list_reversed
+
 
 		# Create array of times
 		time_array = np.arange(length)
@@ -311,7 +327,7 @@ class DataSet:
 
 		new_list = self.processed_time_series[:,1].tolist()
 
-		new_list = list(reversed(new_list))
+		#new_list = list(reversed(new_list))
 
 		series = Series(new_list)
 		
