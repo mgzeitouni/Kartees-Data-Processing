@@ -4,6 +4,8 @@ from .algebra_functions import *
 import pdb
 #import keras.utils
 from pandas import Series
+import matplotlib as mpl
+mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
 def map_section(section):
@@ -65,19 +67,19 @@ class DataSet:
 		length = days_back * 6 * 24
 
 
-		if self.raw_data_matrix[0,0] > self.raw_data_matrix[-1,0]:
+		# if self.raw_data_matrix[0,0] > self.raw_data_matrix[-1,0]:
 
-			# price_list = self.raw_data_matrix[:,1].tolist()
+		# 	# price_list = self.raw_data_matrix[:,1].tolist()
 
-			# price_list_reversed = list(reversed(price_list))
+		# 	# price_list_reversed = list(reversed(price_list))
 
-			# self.raw_data_matrix[:,1] = price_list_reversed
+		# 	# self.raw_data_matrix[:,1] = price_list_reversed
 
-			time_list = self.raw_data_matrix[:,0].tolist()
+		# 	time_list = self.raw_data_matrix[:,0].tolist()
 
-			time_list_reversed = list(reversed(time_list))
+		# 	time_list_reversed = list(reversed(time_list))
 
-			self.raw_data_matrix[:,0] = time_list_reversed
+		# 	self.raw_data_matrix[:,0] = time_list_reversed
 
 
 		# Create array of times
@@ -121,6 +123,22 @@ class DataSet:
 		last_point = int(round(days_back * 24 * 6))
 
 		self.processed_time_series = self.processed_time_series[0:last_point, :]
+
+		if self.raw_data_matrix[0,0] > self.raw_data_matrix[-1,0]:
+
+			price_list = self.processed_time_series[:,1].tolist()
+
+			price_list_reversed = list(reversed(price_list))
+
+			self.processed_time_series[:,1] = price_list_reversed
+
+			# time_list = self.raw_data_matrix[:,0].tolist()
+
+			# time_list_reversed = list(reversed(time_list))
+
+			# self.raw_data_matrix[:,0] = time_list_reversed
+
+
 
 
 
