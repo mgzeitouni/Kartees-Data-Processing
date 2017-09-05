@@ -61,6 +61,7 @@ def create_training_files(data_dir):
 					writer.writerows(processed_data.current_training_output )
 				
 
+	return timestamp
 
 
 def consolidate_training_files(timestamp):
@@ -137,6 +138,6 @@ def consolidate_training_files(timestamp):
 if __name__=='__main__':
 
 
-	create_training_files('sample_data')
+	timestamp = create_training_files('sample_data')
 	
-	#consolidate_training_files(1502714105)
+	consolidate_training_files(timestamp)

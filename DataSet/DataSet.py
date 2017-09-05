@@ -8,6 +8,9 @@ import matplotlib as mpl
 mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
+
+DEFAULT_HEADER = ['Time', 'Time_Diff', 'Zone_Section_Id', 'Zone_Name', 'Total_Tickets', 'Average_Price', 'Zone_Section_Total_Tickets', 'Zone_Section_Average_Price', 'Zone_Section_Min_Price', 'Zone_Section_Max_Price', 'Zone_Section_Std', 'Wins', 'Losses', 'L_10', 'Section_Median', 'Total_Listings', 'Zone_Section_Num_Listings', 'Data_Type', 'Event_Id']
+
 def map_section(section):
 
 	section_map = {182157:1,
@@ -19,7 +22,8 @@ def map_section(section):
 
 class DataSet:
 
-	def __init__(self, path, data_matrix, series_type='moving_average', ma_window_width=2, day_interval=0.5, shrink_set=True):
+	def __init__(self, data_matrix, header_list=DEFAULT_HEADER, series_type='moving_average', ma_window_width=2, shrink_set=True, new_day_interval=0.5 ):
+
 
 		self.time_processed = False
 
@@ -33,31 +37,22 @@ class DataSet:
 
 		self.shrunk = False
 
-		# Check if time order ascending, else reverse it
+		time_diff_col = 1
 
-		# if data_matrix[0,0] > data_matrix[-1,0]:
+		section_avg_col = 7
 
-		# 	price_list = data_matrix[:,1].tolist()
-
-		# 	price_list_reversed = list(reversed(price_list))
-
-		# 	data_matrix[:,1] = price_list_reversed
-
-			#time_list = data_matrix[:,0].tolist()
-
-			#time_list_reversed = list(reversed(time_list))
-
-			#data_matrix[:,0] = time_list_reversed
-
-
-		self.raw_data_matrix = data_matrix
+		self.raw_time_data_matrix = np.column_stack((data_matrix[:,time_diff_col],data_matrix[:,section_avg_col]))
 		
+		pdb.set_trace()
+
+		print (self.raw_time_data_matrix )
+		print (self.raw_time_data_matrix.shape )
 		self.process_time_data()
 
 		if series_type=='moving_average':
 
 			self.ma_window_width = ma_window_width
-			self.day_interval = day_interval
+			self.new_day_interval = new_day_interval
 			self.shrink_set = shrink_set
 			self.moving_average()
 
@@ -66,26 +61,10 @@ class DataSet:
 
 		length = days_back * 6 * 24
 
-
-		# if self.raw_data_matrix[0,0] > self.raw_data_matrix[-1,0]:
-
-		# 	# price_list = self.raw_data_matrix[:,1].tolist()
-
-		# 	# price_list_reversed = list(reversed(price_list))
-
-		# 	# self.raw_data_matrix[:,1] = price_list_reversed
-
-		# 	time_list = self.raw_data_matrix[:,0].tolist()
-
-		# 	time_list_reversed = list(reversed(time_list))
-
-		# 	self.raw_data_matrix[:,0] = time_list_reversed
-
-
 		# Create array of times
 		time_array = np.arange(length)
 
-		raw_length = int(self.raw_data_matrix.shape[0])
+		raw_length = int(self.raw_time_data_matrix.shape[0])
 
 		processed_length = int(time_array.shape[0])
 
@@ -95,7 +74,7 @@ class DataSet:
 
 
 		# Transform raw times
-		for row in self.raw_data_matrix:
+		for row in self.raw_time_data_matrix:
 
 			time = row[0]
 
@@ -124,22 +103,13 @@ class DataSet:
 
 		self.processed_time_series = self.processed_time_series[0:last_point, :]
 
-		if self.raw_data_matrix[0,0] > self.raw_data_matrix[-1,0]:
+		if self.raw_time_data_matrix[0,0] > self.raw_time_data_matrix[-1,0]:
 
 			price_list = self.processed_time_series[:,1].tolist()
 
 			price_list_reversed = list(reversed(price_list))
 
 			self.processed_time_series[:,1] = price_list_reversed
-
-			# time_list = self.raw_data_matrix[:,0].tolist()
-
-			# time_list_reversed = list(reversed(time_list))
-
-			# self.raw_data_matrix[:,0] = time_list_reversed
-
-
-
 
 
 	def full_series_training_set(self, output_type='regular'):
@@ -195,15 +165,15 @@ class DataSet:
 		return self.full_series_training_inputs,self.full_series_training_outputs 
 
 
-	def sliding_window_training_set(self, differenced=True, base_difference='current_y', days_back=30, days_ahead=30):
+	def sliding_window_training_set(self, differenced, base_difference, days_back, days_ahead):
 
 		if not self.time_processed:
 
 			self.process_time_data()
 
 
-		self.len_back_sliding_window = int(days_back/self.day_interval)
-		self.len_ahead_sliding_window = int(days_ahead/self.day_interval)
+		self.len_back_sliding_window = int(days_back/self.new_day_interval)
+		self.len_ahead_sliding_window = int(days_ahead/self.new_day_interval)
 
 		if not self.shrunk:
 
@@ -302,7 +272,7 @@ class DataSet:
 		return self.sliding_window_training_inputs,self.sliding_window_training_outputs 
 
 
-	def create_training_set(self, time_type='sliding_window'):
+	def create_training_set(self, time_type='sliding_window', differenced=True, base_difference='current_y', days_back=30, days_ahead=30):
 
 		# Create time processed training sets if not done already
 
@@ -310,19 +280,15 @@ class DataSet:
 
 			if time_type=='sliding_window':
 
-				self.sliding_window_training_set()
-
-				self.current_training_input = self.sliding_window_training_inputs
+				self.sliding_window_training_set(differenced,base_difference,days_back,days_ahead)
 
 			else:
 
 				self.full_series_training_set()
-				self.current_training_input = self.full_series_training_inputs
-
 
 		# Pull out section from raw data matrix
 
-		section = int(self.raw_data_matrix[0,2])
+		section = int(self.raw_time_data_matrix[0,2])
 
 		section = [map_section(section)]
 
@@ -369,7 +335,7 @@ class DataSet:
 
 		if self.shrink_set:
 
-			n_new_points = int((self.moving_average_series.shape[0]/144) / self.day_interval)
+			n_new_points = int((self.moving_average_series.shape[0]/144) / self.new_day_interval)
 
 			k=0
 			step = int(self.moving_average_series.shape[0]/n_new_points)
