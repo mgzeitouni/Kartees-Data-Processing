@@ -1,10 +1,13 @@
 import csv
 import numpy as np
+import pandas as pd
 import pdb
 from DataSet import DataSet
 import os
 #import keras.utils
 import time
+
+DAY_INTERVAL = 0.5
 
 def create_training_files(data_dir):
 
@@ -37,9 +40,9 @@ def create_training_files(data_dir):
 
 
 				#processed_data = DataSet(path, data)
-				processed_data = DataSet(path, data, series_type='moving_average', ma_window_width=2, day_interval=0.5, shrink_set=True)
+				processed_data = DataSet(data, series_type='moving_average', ma_window_width=2, new_day_interval=DAY_INTERVAL, shrink_set=True)
 
-				processed_data.sliding_window_training_set(differenced=False)
+				#processed_data.sliding_window_training_set(differenced=False)
 
 				processed_data.create_training_set()
 
@@ -73,6 +76,8 @@ def consolidate_training_files(timestamp):
 
 	input_training_file_created = False
 
+	series_length = 0
+
 	for subdir, dirs, files in os.walk('training_sets/inputs/%s' %timestamp):
 
 		for file in files:
@@ -84,6 +89,8 @@ def consolidate_training_files(timestamp):
 					reader = csv.reader(data_file)
 
 					data = np.array([row for row in reader])
+					
+					series_length = data.shape[1] - 2
 
 					write_type = 'a'
 
@@ -100,8 +107,27 @@ def consolidate_training_files(timestamp):
 
 						writer.writerows(data)
 
-	output_training_file_created = False
+	# Add example number column for spark to join
 
+	header_row = ["Section", "Time_in_%s_day_intervals" %DAY_INTERVAL]
+	for x in range(series_length):
+
+	 	header_row.append("Price_%s_days_back" %str((series_length-x) * DAY_INTERVAL))
+
+	csv_input = pd.read_csv('training_sets/all/inputs/%s.csv' %timestamp, names = header_row)
+	
+	example_num_col = np.reshape(np.arange(csv_input.shape[0]),[csv_input.shape[0],1])
+
+	csv_input['example_num_col'] = example_num_col
+
+	cols = csv_input.columns.tolist()
+	cols = cols[-1:] + cols[:-1]
+	csv_input = csv_input[cols]
+
+	csv_input.to_csv('training_sets/all/inputs/%s.csv' %timestamp, index=False)
+
+
+	output_training_file_created = False
 
 	for subdir, dirs, files in os.walk('training_sets/outputs/%s' %timestamp):
 
@@ -117,6 +143,7 @@ def consolidate_training_files(timestamp):
 
 					write_type = 'a'
 
+
 					if not output_training_file_created:
 
 						write_type='w+'
@@ -129,6 +156,22 @@ def consolidate_training_files(timestamp):
 
 						writer.writerows(data)
 
+
+	header_row = []
+	for x in range(series_length-1):
+
+	 	header_row.append("Price_%s_days_ahead" %str((x+1) * DAY_INTERVAL))
+
+
+	csv_input = pd.read_csv('training_sets/all/outputs/%s.csv' %timestamp, names = header_row)
+	
+	csv_input['example_num_col'] = example_num_col
+
+	cols = csv_input.columns.tolist()
+	cols = cols[-1:] + cols[:-1]
+	csv_input = csv_input[cols]
+
+	csv_input.to_csv('training_sets/all/outputs/%s.csv' %timestamp, index=False)
 
 
 	end = time.time()

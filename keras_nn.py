@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 import pdb
-from .DataSet import DataSet
+from DataSet import DataSet
 import matplotlib as mpl
 mpl.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -20,8 +20,8 @@ import os
 def create_model(predictors, target):
 
 	input_dim = predictors.shape[1]
-	output_dim = target.shape[1]
-
+	#output_dim = target.shape[1]
+	output_dim = 1
 	model = Sequential()
 
 	model.add(Dense(500, activation='relu', input_shape=(input_dim,)))
@@ -39,7 +39,7 @@ def create_model(predictors, target):
 	filepath="weights.best.hdf5"
 	checkpoint = ModelCheckpoint(filepath, monitor='val_mean_squared_error', save_best_only=True, mode='max')
 
-	training = model.fit(predictors, target, verbose=True, batch_size = 10, epochs = 1, validation_split = 0.2,callbacks=[early_stopping_monitor, checkpoint])
+	training = model.fit(predictors, target, verbose=True, batch_size = 10, epochs = 10, validation_split = 0.2,callbacks=[early_stopping_monitor, checkpoint])
 
 	#print("Loss: %s, MSE: %s" %(training.history['val_loss'], training.history['mean_squared_error'] ) )
 	#print (training.history['val_loss'])
@@ -113,8 +113,8 @@ if __name__=='__main__':
 	start_reading = time.time()
 
 
-	input_path = 'training_sets/all/inputs/1502714105.csv'
-	output_path = 'training_sets/all/outputs/1502714105.csv'
+	input_path = 'training_sets/all/inputs/1503367642.csv'
+	output_path = 'training_sets/all/outputs/1503367642.csv'
 	
 	print("Reading inputs... ")
 
@@ -132,6 +132,10 @@ if __name__=='__main__':
 
 		target = np.array([row for row in reader])
 
+	cols_ahead_prediction = 10
+	
+	target = target[:,cols_ahead_prediction]
+
 	end_reading = time.time()
 
 	print ("Reading files time: %0.2f minutes" %((end_reading-start_reading)/60))
@@ -147,19 +151,24 @@ if __name__=='__main__':
 
 	print ("Training time: %0.2f minutes" %((end_training-start_training)/60))
 
-	row = int(input("Enter number between 0 and %s: " %predictors.shape[0]))
+	#row = int(input("Enter number between 0 and %s: " %predictors.shape[0]))
 
-	pred_data = predictors[row,:]
+	predictions = []
 
-	pred_data = np.reshape(pred_data, (1,predictors.shape[1]))
+	for row in range(predictors.shape[0]):
 
-	#print (pred_data)
+		pred_data = predictors[row,:]
 
-	predictions = model.predict(pred_data)
+		pred_data = np.reshape(pred_data, (1,predictors.shape[1]))
+		#pdb.set_trace()
+		#print (model.predict(pred_data))
+		predictions.append(model.predict(pred_data)[0])
+		
+		
+	#print ("Prediction: %s, Actual: %s" %(predictions,actual))
+	
 
-	actual = target[row,:]
-
-	plt.plot(predictions[0], 'r', actual, 'b' )
+	plt.plot(predictions, 'r', target, 'b' )
 	plt.show()
 
 

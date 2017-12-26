@@ -37,16 +37,17 @@ class DataSet:
 
 		self.shrunk = False
 
-		time_diff_col = 1
+		section_col = 1
+		self.section = data_matrix[:,section_col][0]
 
-		section_avg_col = 7
+		time_diff_col = 3
+		time_diff_array = np.array(data_matrix[:,time_diff_col])
 
-		self.raw_time_data_matrix = np.column_stack((data_matrix[:,time_diff_col],data_matrix[:,section_avg_col]))
+		section_avg_col = 2
+		section_avg_array = np.array(data_matrix[:,section_avg_col])
+
+		self.raw_time_data_matrix = np.column_stack([time_diff_array,section_avg_array] )
 		
-		pdb.set_trace()
-
-		print (self.raw_time_data_matrix )
-		print (self.raw_time_data_matrix.shape )
 		self.process_time_data()
 
 		if series_type=='moving_average':
@@ -272,7 +273,7 @@ class DataSet:
 		return self.sliding_window_training_inputs,self.sliding_window_training_outputs 
 
 
-	def create_training_set(self, time_type='sliding_window', differenced=True, base_difference='current_y', days_back=30, days_ahead=30):
+	def create_training_set(self, time_type='sliding_window', differenced=False, base_difference='current_y', days_back=30, days_ahead=30):
 
 		# Create time processed training sets if not done already
 
@@ -288,9 +289,12 @@ class DataSet:
 
 		# Pull out section from raw data matrix
 
-		section = int(self.raw_time_data_matrix[0,2])
+		#section = int(self.raw_time_data_matrix[0,2])
 
-		section = [map_section(section)]
+		#section = [map_section(int(self.section))]
+		section=int(self.section)
+		section_col = np.full((self.current_training_input.shape[0],1),section)
+		self.current_training_input = np.hstack((section_col,self.current_training_input) )
 
 		#one_hot_labels = keras.utils.to_categorical(section,num_classes=3)
 

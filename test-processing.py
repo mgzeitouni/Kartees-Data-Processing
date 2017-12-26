@@ -4,8 +4,10 @@ import matplotlib as mpl
 mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import csv
+import pdb
 
-path = 'structured_data/2017_3_10/Arizona Diamondbacks/9718382.csv'
+#path = 'structured_data/structured-spark-output.csv'
+path = 'sample_data/sample1.csv'
 
 with open(path, 'rU') as data_file:
 
@@ -18,16 +20,35 @@ with open(path, 'rU') as data_file:
 
 processed_data = DataSet(data, header, series_type='moving_average', ma_window_width=2, new_day_interval=0.5, shrink_set=True)
 
+
 #processed_data.sliding_window_training_set(differenced=False)
 
-long_data = DataSet(path, data, series_type='regular')
+long_data = DataSet(data, series_type='regular')
 
 
-plt.figure(1)
-plt.subplot(211)
+
+fig = plt.figure(1)
+fig.suptitle("Mets Home Opener 2017", fontsize="x-large")
+plt.title('Mets Home Opener, 2017')
+x = plt.subplot(211)
+x.set_title("Avg Section Price through time - every 10 minutes")
+x.set_ylabel('Citifield, Baseline Silver 107')
+
+plt.plot(long_data.processed_time_series[:,0],long_data.processed_time_series[:,1])
+
+
+
+y = plt.subplot(212)
+y.set_title("Avg Price through time - smoothed series")
+y.set_ylabel('Citifield, Baseline Silver 107')
+
+
 plt.plot(processed_data.processed_time_series[:,0],processed_data.processed_time_series[:,1])
 
-plt.figure(1)
-plt.subplot(212)
-plt.plot(long_data.processed_time_series[:,0],long_data.processed_time_series[:,1])
+
+
+plt.xlabel('Time to Game')
+
+#plt.ylabel('Citifield, Baseline Silver 107')
+
 plt.show()
