@@ -4,9 +4,9 @@ from .algebra_functions import *
 import pdb
 #import keras.utils
 from pandas import Series
-import matplotlib as mpl
-mpl.use('TkAgg')
-import matplotlib.pyplot as plt
+# import matplotlib as mpl
+# mpl.use('TkAgg')
+# import matplotlib.pyplot as plt
 
 
 DEFAULT_HEADER = ['Time', 'Time_Diff', 'Zone_Section_Id', 'Zone_Name', 'Total_Tickets', 'Average_Price', 'Zone_Section_Total_Tickets', 'Zone_Section_Average_Price', 'Zone_Section_Min_Price', 'Zone_Section_Max_Price', 'Zone_Section_Std', 'Wins', 'Losses', 'L_10', 'Section_Median', 'Total_Listings', 'Zone_Section_Num_Listings', 'Data_Type', 'Event_Id']
