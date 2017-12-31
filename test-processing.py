@@ -19,12 +19,12 @@ with open(path, 'rU') as data_file:
 
 
 processed_data = DataSet(data, header, series_type='moving_average', ma_window_width=2, new_day_interval=0.5, shrink_set=True)
-
+print (len(processed_data.processed_time_series))
 
 #processed_data.sliding_window_training_set(differenced=False)
 
 long_data = DataSet(data, series_type='regular')
-
+print (len(long_data.processed_time_series))
 
 
 fig = plt.figure(1)
