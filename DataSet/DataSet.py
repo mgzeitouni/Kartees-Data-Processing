@@ -22,7 +22,7 @@ def map_section(section):
 
 class DataSet:
 
-	def __init__(self, data_matrix, section_col, time_diff_col,values_col, series_type='moving_average', ma_window_width=2, shrink_set=True, new_day_interval=0.5 ):
+	def __init__(self, pd_data, time_diff_col_name,values_col_name, series_type='moving_average', ma_window_width=2, shrink_set=True, new_day_interval=0.5 ):
 
 
 		self.time_processed = False
@@ -37,11 +37,12 @@ class DataSet:
 
 		self.shrunk = False
 
-		self.section = data_matrix[:,section_col][0]
+		# self.section = data_matrix[:,section_col][0]
 
-		time_diff_array = np.array(data_matrix[:,time_diff_col])
 
-		values_array = np.array(data_matrix[:,values_col])
+		time_diff_array = pd_data[time_diff_col_name].values
+
+		values_array = pd_data[values_col_name].values
 
 		self.raw_time_data_matrix = np.column_stack([time_diff_array,values_array] )
 		
