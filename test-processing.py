@@ -1,4 +1,4 @@
-from DataSet import DataSet
+from SequenceData import SequenceData
 import numpy as np
 import matplotlib as mpl
 mpl.use('TkAgg')
@@ -20,7 +20,7 @@ df = pd.read_csv(path)
 # 	data = np.array([row for row in reader])
 
 
-processed_data = DataSet(df, time_diff_col_name='Time_Diff', values_col_name='Zone_Section_Average_Price',series_type='moving_average', ma_window_width=2, new_day_interval=0.5, shrink_set=True)
+processed_data = SequenceData(df, time_diff_col_name='Time_Diff', values_col_name='Zone_Section_Average_Price',series_type='moving_average', ma_window_width=2, new_day_interval=0.5, shrink_set=True)
 print (len(processed_data.processed_time_series))
 
 #processed_data.sliding_window_training_set(differenced=False)
