@@ -22,7 +22,7 @@ def map_section(section):
 
 class DataSet:
 
-	def __init__(self, pd_data, time_diff_col_name,values_col_name, series_type='moving_average', ma_window_width=2, shrink_set=True, new_day_interval=0.5 ):
+	def __init__(self, pd_data, time_diff_col_name,values_col_name, series_type='moving_average', ma_window_width=2, shrink_set=True, new_day_interval=0.5, verbose =False ):
 
 
 		self.time_processed = False
@@ -37,8 +37,9 @@ class DataSet:
 
 		self.shrunk = False
 
-		# self.section = data_matrix[:,section_col][0]
+		self.verbose = verbose
 
+		# self.section = data_matrix[:,section_col][0]
 
 		time_diff_array = pd_data[time_diff_col_name].values
 
@@ -48,7 +49,7 @@ class DataSet:
 		
 		self.process_time_data()
 
-		if series_type=='moving_average':
+		if series_type=='moving_average' and self.processed_time_series!=None:
 
 			self.ma_window_width = ma_window_width
 			self.new_day_interval = new_day_interval
@@ -71,6 +72,8 @@ class DataSet:
 
 		self.new_unprocessed_matrix[:,0] = time_array
 
+		# Count how many values above valid days back
+		count_invalid_index =0
 
 		# Transform raw times
 		for row in self.raw_time_data_matrix:
@@ -80,35 +83,47 @@ class DataSet:
 			y = float(row[1])
 
 			new_time = int(round(float(time)*24.0*6.0))
-			
-			index = 0
+		
+			if new_time < length:
 
-			# Find and replace in the new matrix
-			for row in self.new_unprocessed_matrix:
+				index = 0
 
-				if new_time==row[0]:
-					
-					self.new_unprocessed_matrix[index,1] = y
+				# Find and replace in the new matrix
+				for row in self.new_unprocessed_matrix:
 
-				index+=1
+					if new_time==row[0]:
+						
+						self.new_unprocessed_matrix[index,1] = y
 
-		if extrapolate_method=='connect_points':
+					index+=1
+			else:
+				count_invalid_index +=1
+				
 
-			self.processed_time_series = connect_points(self.new_unprocessed_matrix)
-			self.processed = True
-			self.time_processed =True
+		if (count_invalid_index/self.raw_time_data_matrix.shape[0])>0.5:
 
-		last_point = int(round(days_back * 24 * 6))
+			self.processed_time_series = None
+			if self.verbose:
+				print("Invalid sequence - not enough points %s days before game" %days_back)
+		
+		else:
+			if extrapolate_method=='connect_points':
 
-		self.processed_time_series = self.processed_time_series[0:last_point, :]
+				self.processed_time_series = connect_points(self.new_unprocessed_matrix)
+				self.processed = True
+				self.time_processed =True
 
-		if self.raw_time_data_matrix[0,0] > self.raw_time_data_matrix[-1,0]:
+				last_point = int(round(days_back * 24 * 6))
 
-			price_list = self.processed_time_series[:,1].tolist()
+				self.processed_time_series = self.processed_time_series[0:last_point, :]
 
-			price_list_reversed = list(reversed(price_list))
+				if self.raw_time_data_matrix[0,0] > self.raw_time_data_matrix[-1,0]:
 
-			self.processed_time_series[:,1] = price_list_reversed
+					price_list = self.processed_time_series[:,1].tolist()
+
+					price_list_reversed = list(reversed(price_list))
+
+					self.processed_time_series[:,1] = price_list_reversed
 
 
 	def full_series_training_set(self, output_type='regular'):
