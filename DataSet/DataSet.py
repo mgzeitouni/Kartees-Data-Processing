@@ -20,7 +20,7 @@ def map_section(section):
 	return section_map[section]
 
 
-class SequenceData:
+class DataSet:
 
 	def __init__(self, pd_data, time_diff_col_name,values_col_name, series_type='moving_average', ma_window_width=2, shrink_set=True, new_day_interval=0.5 ):
 
