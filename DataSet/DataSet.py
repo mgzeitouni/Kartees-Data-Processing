@@ -49,7 +49,7 @@ class DataSet:
 		
 		self.process_time_data()
 
-		if series_type=='moving_average' and self.processed_time_series!=None:
+		if series_type=='moving_average' and not self.invalid_sequence:
 
 			self.ma_window_width = ma_window_width
 			self.new_day_interval = new_day_interval
@@ -103,10 +103,12 @@ class DataSet:
 		if (count_invalid_index/self.raw_time_data_matrix.shape[0])>0.5:
 
 			self.processed_time_series = None
+			self.invalid_sequence=True
 			if self.verbose:
 				print("Invalid sequence - not enough points %s days before game" %days_back)
 		
 		else:
+			self.invalid_sequence=False
 			if extrapolate_method=='connect_points':
 
 				self.processed_time_series = connect_points(self.new_unprocessed_matrix)
